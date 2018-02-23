@@ -1,0 +1,256 @@
+const {log, biglog, errorlog, colorize} = require("./out");
+const model = require("./model");
+
+/**
+*Muestra la ayuda
+*
+*@param rl Objeto readline usado para implementar CLI.
+*/
+exports.helpCmd = rl => {
+	log("Comandos:");
+	log(" h|help - Muestra esta ayuda.");
+	log(" list - Listar los quizzes existentes.");
+	log(" show <id> - Muestra la pregunta y la respuesta el quiz indicado.");
+	log(" add - Añadir un nuevo quiz interactivamente.");
+	log(" delete <id> - Borrar el quiz indicado.");
+	log(" edit <id> - Editar el quiz indicado.");
+	log(" test <id> - Probar el quiz indicado.");
+	log(" p|play - jugar a preguntar aleatoriamente todos los quizzes.");
+	log(" credits -Créditos.");
+	log(" q|quit - Salir del programa.");
+	rl.prompt();
+};
+
+
+/**
+ * Lista todos los quizzes existentes en el modelo.
+ * 
+ * *@param rl Objeto readline usado para implementar CLI.
+ */
+exports.listCmd = rl => {
+	
+	model.getAll().forEach((quiz, id) => {
+		
+		log(`  [${ colorize(id, 'magenta')}]: ${quiz.question}`);
+	});
+	
+	rl.prompt();
+};
+
+
+/**
+ * Muestra el quiz indicado en el parámetro: la pregunta y la respuesta.
+ * 
+ * @param id Clave del quiz mostrar.
+ * @param rl Objeto readline usado para implementar CLI.
+ */
+exports.showCmd = (rl, id) => {
+
+	if (typeof id === "undefined") {
+		errorlog(`Falta el parámetro id.`);
+	} else {
+		try {
+			const quiz = model.getByIndex(id);
+			log(`[${colorize(id, 'magenta')}]:  ${quiz.question} ${colorize('=>', 'magenta')} ${quiz.answer}`);
+		} catch(error) {
+			errorlog(error.message);
+		}
+	}
+	
+	rl.prompt();
+};
+
+
+/**
+ * Añade un nuevo quiz al modelo.
+ * Pregunta interactivamente por la pregunta y por la respuesta.
+ * 
+ * @param rl Objeto readline usado para implementar CLI.
+ */
+exports.addCmd= rl => {
+	
+	rl.question(colorize(' Introduzca una pregunta: ', 'red'), question => {
+		
+		rl.question(colorize(' Introduzca la respuesta: ', 'red'), answer => {
+			
+			model.add(question, answer);
+			log(` ${colorize('Se ha añadido', 'magenta')}: ${question} ${colorize('=>', 'magenta')} ${answer}`);
+			rl.prompt();
+		});
+	});
+};
+
+
+/**
+ * Borra un quiz del modelo.
+ * @param id Clave del quiz a borrar en el modelo.
+ * @param rl Objeto readline usado para implementar CLI.
+ */
+exports.deleteCmd = (rl, id) => {
+	
+	if (typeof id === "undefined") {
+		errorlog(`Falta el parámetro id.`);
+	} else {
+		try {
+			model.deleteByIndex(id);
+		} catch(error) {
+			errorlog(error.message);
+		}
+	}	
+	rl.prompt();
+};
+
+
+/**
+ * Edita un quiz del modelo.
+ * @param id Clave del quiz a editar en el modelo.
+ * @param rl Objeto readline usado para implementar CLI.
+ */
+exports.editCmd = (rl, id) => {
+	
+	if (typeof id === "undefined") {
+		errorlog(`Falta el parámetro id.`);
+		rl.prompt();
+	} else {
+		try {
+
+			const quiz = model.getByIndex(id);
+			process.stdout.isTTY && setTimeout(() => {rl.write(quiz.question)},0);
+
+			rl.question(colorize(' Introduzca una pregunta: ', 'red'), question => {
+
+				process.stdout.isTTY && setTimeout(() => {rl.write(quiz.answer)},0);
+
+				rl.question(colorize(' Introduzca la respuesta: ', 'red'), answer => {
+
+					model.update(id, question, answer);
+					log(` Se ha cambiado el quiz ${colorize(id, 'magenta')} por: ${question} ${colorize('=>', 'magenta')} ${answer}`);
+					rl.prompt();
+				});
+			});
+		} catch (error) {
+			errorlog(error.message);
+			rl.prompt();
+		}
+	}
+
+
+	rl.prompt();
+};
+
+
+/**
+ * Prueba un quiz, es decir, hace una pregunta del modelo a la que debemos contestar.
+ * @param id Clave del quiz a probar.
+ * @param rl Objeto readline usado para implementar CLI.
+ */
+exports.testCmd = (rl, id) => {
+	
+	if (typeof id === "undefined") {
+		errorlog(`Falta el parámetro id.`);
+		rl.prompt();
+	} else {
+		try {
+
+			const quiz = model.getByIndex(id);
+			let pregunta = quiz.question.toString();
+			rl.question(colorize(pregunta + '? ', 'red'), answer => {
+				let respuesta = answer.toLowerCase().trim();
+				let res = quiz.answer.toLowerCase().trim();
+				log(`Su respuesta es: `);
+				if (respuesta === res){
+					biglog('CORRECTA', 'green');
+					rl.prompt();
+				} else {
+					biglog('INCORRECTA', 'red');
+					rl.prompt();
+				}
+			});
+		} catch (error) {
+			errorlog(error.message);
+			rl.prompt();
+		}
+	}
+	rl.prompt();
+
+};
+
+
+/**
+ * Pregunta todos lo quizzes existentes en el modelo en orden aleatorio.
+ * Se gana si se contesta a todos satisfactoriamente.
+ * 
+ * @param rl Objeto readline usado para implementar CLI.
+ */
+exports.playCmd = rl => {
+	log(`Bienvenido al juego.`)
+	let score = 0;
+	let  toBeResolved = [];
+	let i;
+	for (i=0; i < model.count(); i++) {
+		toBeResolved[i] = i;
+	}	
+	const playOne = () => {
+		if (toBeResolved.length === 0) {
+			log(`No quedan preguntas`);
+			log(`Fin del examen. Aciertos:`);
+			biglog(score, 'magenta');
+			rl.prompt();
+		} else {
+			try {
+				let ale = (i-1)*Math.random();
+				let id = ale.toFixed(0);
+				let posicion = toBeResolved.indexOf(parseInt(id));
+				if (posicion !== -1) {
+					let quiz = model.getByIndex(id);
+					toBeResolved.splice(posicion,1);
+					let pregunta = quiz.question.toString();
+					rl.question(colorize(pregunta + '? ', 'red'), answer => {
+						let respuesta = answer.toLowerCase().trim();
+						let res = quiz.answer.toLowerCase().trim();
+						if (respuesta === res){
+							score ++;
+							log(`CORRECTO - Lleva ${score} aciertos.`)
+							playOne();
+						} else {
+							log(`INCORRECTO.`);
+							log(`Fin del examen. Aciertos:`);
+							biglog(score, 'magenta');
+							rl.prompt();
+						}
+
+				});
+				} else {
+					playOne();
+				}
+			} catch (error) {
+				errorlog(error.message);
+				rl.prompt();
+			}
+		}
+	}
+	playOne();
+};
+
+
+/**
+ * Muestra los nombres de los autores de la práctica.
+ * 
+ * @param rl Objeto readline usado para implementar CLI.
+ */
+exports.creditsCmd = rl => {
+	log("Autor de la práctica:");
+	log("Gonzalo Moreno Arévalo", 'green');
+	rl.prompt();
+};
+
+
+/**
+ * Terminar el programa.
+ * 
+ * @param rl Objeto readline usado para implementar CLI.
+ */
+exports.quitCmd = rl => {
+	rl.close();
+};
+
