@@ -47,7 +47,7 @@ exports.listCmd = rl => {
 exports.showCmd = (rl, id) => {
 
 	if (typeof id === "undefined") {
-		errorlog(`Falta el parámetro id.`);
+		errorlog(`El valor del parámetro id no es válido.`);
 	} else {
 		try {
 			const quiz = model.getByIndex(id);
@@ -157,12 +157,14 @@ exports.testCmd = (rl, id) => {
 			rl.question(colorize(pregunta + '? ', 'red'), answer => {
 				let respuesta = answer.toLowerCase().trim();
 				let res = quiz.answer.toLowerCase().trim();
-				log(`Su respuesta es: `);
+				
 				if (respuesta === res){
-					biglog('CORRECTA', 'green');
+					log(`Su respuesta es correcta. `);
+					biglog('Correcta', 'green');
 					rl.prompt();
 				} else {
-					biglog('INCORRECTA', 'red');
+					log(`Su respuesta es incorrecta. `);
+					biglog('Incorrecta', 'red');
 					rl.prompt();
 				}
 			});
@@ -183,7 +185,6 @@ exports.testCmd = (rl, id) => {
  * @param rl Objeto readline usado para implementar CLI.
  */
 exports.playCmd = rl => {
-	log(`Bienvenido al juego.`)
 	let score = 0;
 	let  toBeResolved = [];
 	let i;
@@ -192,8 +193,8 @@ exports.playCmd = rl => {
 	}	
 	const playOne = () => {
 		if (toBeResolved.length === 0) {
-			log(`No quedan preguntas`);
-			log(`Fin del examen. Aciertos:`);
+			log(`No hay nada más que preguntar.`);
+			log(`Fin del juego. Aciertos: ${score}`);
 			biglog(score, 'magenta');
 			rl.prompt();
 		} else {
@@ -214,7 +215,7 @@ exports.playCmd = rl => {
 							playOne();
 						} else {
 							log(`INCORRECTO.`);
-							log(`Fin del examen. Aciertos:`);
+							log(`Fin del juego. Aciertos: ${score}`);
 							biglog(score, 'magenta');
 							rl.prompt();
 						}
@@ -239,8 +240,10 @@ exports.playCmd = rl => {
  * @param rl Objeto readline usado para implementar CLI.
  */
 exports.creditsCmd = rl => {
-	log("Autor de la práctica:");
+	log("Autores de la práctica:");
 	log("Gonzalo Moreno Arévalo", 'green');
+	log("Víctor Loureiro Sancho", 'green');
+	
 	rl.prompt();
 };
 
