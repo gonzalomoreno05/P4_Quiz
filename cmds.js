@@ -242,7 +242,7 @@ exports.playCmd = rl => {
 exports.creditsCmd = rl => {
 	log("Autores de la práctica:");
 	log("Gonzalo Moreno Arévalo", 'green');
-	log("Víctor Loureiro Sancho", 'green');
+	log("Victor Loureiro Sancho", 'green');
 	
 	rl.prompt();
 };
