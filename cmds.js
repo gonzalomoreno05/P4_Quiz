@@ -324,47 +324,6 @@ exports.playCmd = rl => {
 	});
 
 };
-	/*
-	const playOne = () => {
-		if (toBeResolved.length === 0) {
-			log(`No hay nada más que preguntar.`);
-			log(`Fin del juego. Aciertos: ${score}`);
-			biglog(score, 'magenta');
-			rl.prompt();
-		} else {
-			try {
-				let ale = (i-1)*Math.random();
-				let id = ale.toFixed(0);
-				let posicion = toBeResolved.indexOf(parseInt(id));
-				if (posicion !== -1) {
-					let quiz = model.getByIndex(id);
-					toBeResolved.splice(posicion,1);
-					let pregunta = quiz.question.toString();
-					rl.question(colorize(pregunta + '? ', 'red'), answer => {
-						let respuesta = answer.toLowerCase().trim();
-						let res = quiz.answer.toLowerCase().trim();
-						if (respuesta === res){
-							score ++;
-							log(`CORRECTO - Lleva ${score} aciertos.`)
-							playOne();
-						} else {
-							log(`INCORRECTO.`);
-							log(`Fin del juego. Aciertos: ${score}`);
-							biglog(score, 'magenta');
-							rl.prompt();
-						}
-
-				});
-				} else {
-					playOne();
-				}
-			} catch (error) {
-				errorlog(error.message);
-				rl.prompt();
-			}
-		}
-	}
-	playOne();
 
 
 
