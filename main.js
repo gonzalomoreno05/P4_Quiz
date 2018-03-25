@@ -7,7 +7,7 @@ const net = require("net");
 
 net.createServer(socket => {
 	
-	socket.write("Se ha conectado un cliente desde " + socket.remoteAddress);
+	console.log("Se ha conectado un cliente desde " + socket.remoteAddress);
 	
 	// Mensaje inicial
 	biglog(socket, 'CORE Quiz', 'green');
