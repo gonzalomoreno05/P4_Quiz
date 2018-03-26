@@ -109,7 +109,7 @@ exports.showCmd = (socket, rl, id) => {
  * @param text Pregunta que hay que hacerle al usarlo.
  * 
  */
-const makeQuestion = (socket, rl, text) => {
+const makeQuestion = (rl, text) => {
 	
 	return new Sequelize.Promise((resolve, reject) => {
 		rl.question(colorize(text, 'red'), answer => {
@@ -183,7 +183,7 @@ exports.editCmd = (socket, rl, id) => {
 	.then(id => models.quiz.findById(id))
 	.then(quiz => {
 		if (!quiz) {
-			throw new Error(`No existe un quiz asociado al id=${id}.`);
+			throw new Error(socket, `No existe un quiz asociado al id=${id}.`);
 		}
 		
 		process.stdout.isTTY && setTimeout(() => {rl.write(quiz.question)}, 0);

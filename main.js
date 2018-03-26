@@ -85,8 +85,9 @@ net.createServer(socket => {
 
 		default:
 			log(socket, `Comando desconocido: '${colorize(cmd, 'red')}'`);
-		log(socket, `Use ${colorize('help', 'green')} para ver todos los comandos disponibles.`);
-		rl.prompt();
+		    log(socket, `Use ${colorize('help', 'green')} para ver todos los comandos disponibles.`);
+		    
+	
 		break;
 		}
 
